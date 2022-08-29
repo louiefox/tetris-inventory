@@ -12,7 +12,9 @@ TETRIS_INV.CONFIG.ListedEntities = {
 TETRIS_INV.CONFIG.DefaultSize = { 2, 2 }
 TETRIS_INV.CONFIG.CustomSizes = {
     ["ent_class"] = { 2, 4 },
-    ["weapon_class"] = { 4, 4 }
+    ["weapon_class"] = { 4, 4 },
+    ["weapon_glock2"] = { 2, 1 },
+    ["weapon_deagle2"] = { 2, 1 }
 }
 
 function TETRIS_INV.FUNC.CanMoveItem( itemX, itemY, itemW, itemH, items )

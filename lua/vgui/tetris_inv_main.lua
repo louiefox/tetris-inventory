@@ -63,10 +63,14 @@ function PANEL:Init()
 
         row = row+1
     end )
+
+    hook.Add( "TetrisInv.Hooks.UpdateInventory", self, function()
+        -- self:CreateItems()
+    end )
 end
 
 local radialGradient = Material( "tetris_inv/gradient_radial.png" )
-function PANEL:CreateItem( itemInfo )
+function PANEL:CreateItem( itemKey, itemInfo )
     local itemPanel = vgui.Create( "DButton", self.gridPanel )
     itemPanel:SetPos( (itemInfo.x-1)*(self.slotSize+self.slotSpacing), (itemInfo.y-1)*(self.slotSize+self.slotSpacing) )
     itemPanel:SetSize( itemInfo.w*(self.slotSize+self.slotSpacing)-self.slotSpacing, itemInfo.h*(self.slotSize+self.slotSpacing)-self.slotSpacing )
@@ -116,6 +120,7 @@ function PANEL:CreateItem( itemInfo )
         if( self.draggingItem and not self.draggingItem.blocked ) then 
             self2.itemX, self2.itemY = self2.hoverItemX or itemInfo.x, self2.hoverItemY or itemInfo.y
             self2:SetPos( (self2.itemX-1)*(self.slotSize+self.slotSpacing), (self2.itemY-1)*(self.slotSize+self.slotSpacing) )
+            TETRIS_INV.FUNC.RequestMoveItem( itemKey, self2.itemX, self2.itemY )
         end
 
         self2.hoverItemX, self2.hoverItemY = nil, nil
@@ -177,6 +182,8 @@ function PANEL:CreateItem( itemInfo )
 end
 
 function PANEL:CreateItems()
+    -- self.gridPanel:Clear()
+
     -- local inventoryTable = {
     --     {
     --         x = 4,
@@ -203,7 +210,7 @@ function PANEL:CreateItems()
         local itemTypeInfo = TETRIS_INV.ITEM_TYPES[v[1]] or TETRIS_INV.ITEM_TYPE_DEFAULT
         local displayInfo = itemTypeInfo.GetDisplayInfo( v[3] )
 
-        self:CreateItem( {
+        self:CreateItem( k, {
             x = v[2][1],
             y = v[2][2],
             w = v[2][3],

@@ -1,8 +1,10 @@
-TETRIS_INV.LOCALPLYMETA = {
-    Player = self
-}
+if( not TETRIS_INV.LOCALPLYMETA ) then
+	TETRIS_INV.LOCALPLYMETA = {
+		Player = self
+	}
 
-setmetatable( TETRIS_INV.LOCALPLYMETA, TETRIS_INV.PLAYERMETA )
+	setmetatable( TETRIS_INV.LOCALPLYMETA, TETRIS_INV.PLAYERMETA )
+end
 
 hook.Add( "PlayerButtonDown", "TetrisInv.PlayerButtonDown.Open", function( ply, button )
 	if( button != KEY_I or IsValid( TETRIS_INV.TEMP.Menu ) ) then return end
@@ -73,3 +75,29 @@ net.Receive( "TetrisInv.SendInventoryItems", function()
 
 	TETRIS_INV.LOCALPLYMETA.InventoryTable = inventoryTable
 end )
+
+function TETRIS_INV.FUNC.RequestMoveItem( key, newX, newY )
+	local inventoryTable = TETRIS_INV.LOCALPLYMETA:GetInventory()
+
+	local itemTransforms = {}
+    for k, v in pairs( inventoryTable ) do
+		if( k == key ) then continue end
+        table.insert( itemTransforms, v[2] )
+    end
+
+	if( not TETRIS_INV.FUNC.CanMoveItem( newX, newY, inventoryTable[key][2][3], inventoryTable[key][2][4], itemTransforms ) ) then 
+		hook.Run( "TetrisInv.Hooks.UpdateInventory" )
+		return
+	end
+
+	inventoryTable[key][2][1] = newX
+	inventoryTable[key][2][2] = newY
+
+	TETRIS_INV.LOCALPLYMETA.InventoryTable = inventoryTable
+
+    net.Start( "TetrisInv.RequestMoveItem" )
+		net.WriteUInt( key, 10 )
+		net.WriteUInt( newX, 5 )
+		net.WriteUInt( newY, 5 )
+	net.SendToServer()
+end

@@ -25,7 +25,7 @@ TETRIS_INV.ITEM_TYPES["spawned_weapon"] = {
         return { ent:GetModel(), (ent.GetWeaponClass and ent:GetWeaponClass()) or "", ent:Getamount() }
     end,
     GetSize = function( itemData )
-        return { 4, 2 }
+        return TETRIS_INV.CONFIG.CustomSizes[itemData[2]] or { 4, 2 }
     end,
     GetDisplayInfo = function( itemData )
         return {

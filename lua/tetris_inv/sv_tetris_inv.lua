@@ -41,6 +41,10 @@ function TETRIS_INV.PLAYERMETA:NetworkItem( ... )
     net.Send( self.Player )
 end
 
+function TETRIS_INV.PLAYERMETA:SetInventory( inventoryTable )
+    self.InventoryTable = inventoryTable
+end
+
 function TETRIS_INV.PLAYERMETA:PickupEnt( ent )
     if( not IsValid( ent ) ) then return end
 
@@ -85,9 +89,26 @@ function TETRIS_INV.PLAYERMETA:AddItem( class, itemData, itemSize )
     end
 
     local key = table.insert( inventoryTable, { class, { itemX, itemY, itemW, itemH }, itemData } )
-    self.InventoryTable = inventoryTable
+    self:SetInventory( inventoryTable )
 
     self:NetworkItem( key )
 
     return true
 end
+
+util.AddNetworkString( "TetrisInv.RequestMoveItem" )
+net.Receive( "TetrisInv.RequestMoveItem", function( len, ply )
+    local itemKey = net.ReadUInt( 10 )
+    if( not itemKey ) then return end
+
+    local inventoryTable = ply:TetrisInv():GetInventory()
+    if( not inventoryTable[itemKey] ) then return end
+
+    local newX, newY = net.ReadUInt( 5 ), net.ReadUInt( 5 )
+    if( not newX or not newY or newX == 0 or newY == 0 or newX > TETRIS_INV.CONFIG.GridX or newY > TETRIS_INV.CONFIG.GridY ) then return end
+
+	inventoryTable[itemKey][2][1] = newX
+	inventoryTable[itemKey][2][2] = newY
+
+    ply:TetrisInv():SetInventory( inventoryTable )
+end )
