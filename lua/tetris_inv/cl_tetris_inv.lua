@@ -76,10 +76,14 @@ hook.Add( "HUDPaint", "TetrisInv.HUDPaint.DrawPickup", function()
 	if( IsValid( traceEnt ) and TETRIS_INV.CONFIG.ListedEntities[traceEnt:GetClass()] and ply:GetPos():DistToSqr( traceEnt:GetPos() ) <= TETRIS_INV.CONFIG.PickupDistance ) then 
 		currentInfo = TETRIS_INV.FUNC.GetDisplayInfo( traceEnt:GetClass(), TETRIS_INV.FUNC.GetEntData( traceEnt ) )
 		currentEnt = traceEnt
+	else
+		currentEnt = nil
 	end
 
 	if( not currentInfo ) then return end
 	pickupAlpha = math.Clamp( pickupAlpha+(currentEnt == traceEnt and 5 or -5), 0, 255 )
+
+	if( pickupAlpha == 0 ) then return end
 
 	surface.SetAlphaMultiplier( pickupAlpha/255 )
 
@@ -140,4 +144,10 @@ hook.Add( "HUDPaint", "TetrisInv.HUDPaint.DrawPickup", function()
 	surface.DrawText( string.upper( currentInfo.Name ) )
 
 	surface.SetAlphaMultiplier( 1 )
+end )
+
+local color_green = Color( 50, 255, 50 )
+hook.Add( "PreDrawHalos", "TetrisInv.PreDrawHalos.DrawPickup", function()
+	if( not IsValid( currentEnt ) ) then return end
+	halo.Add( { currentEnt }, color_green, 2, 2, 10, true, true )
 end )
