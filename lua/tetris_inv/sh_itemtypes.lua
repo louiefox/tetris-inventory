@@ -34,3 +34,11 @@ TETRIS_INV.ITEM_TYPES["spawned_weapon"] = {
         }
     end
 }
+
+function TETRIS_INV.FUNC.GetEntData( ent )
+    return (TETRIS_INV.ITEM_TYPES[ent:GetClass()] or TETRIS_INV.ITEM_TYPE_DEFAULT).GetData( ent )
+end
+
+function TETRIS_INV.FUNC.GetDisplayInfo( class, itemData )
+    return (TETRIS_INV.ITEM_TYPES[class] or TETRIS_INV.ITEM_TYPE_DEFAULT).GetDisplayInfo( itemData )
+end
