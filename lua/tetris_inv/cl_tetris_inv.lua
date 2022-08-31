@@ -30,7 +30,13 @@ end )
 net.Receive( "TetrisInv.SendInventoryItems", function()
 	local inventoryTable = TETRIS_INV.LOCALPLYMETA:GetInventory()
 	for i = 1, net.ReadUInt( 8 ) do
-		inventoryTable[net.ReadUInt( 10 )] = {
+		local itemKey = net.ReadUInt( 10 )
+		if( not net.ReadBool() ) then
+			inventoryTable[itemKey] = nil
+			continue 
+		end
+
+		inventoryTable[itemKey] = {
 			net.ReadString(),
 			{ net.ReadUInt( 5 ), net.ReadUInt( 5 ), net.ReadUInt( 5 ), net.ReadUInt( 5 ) },
 			net.ReadTable()

@@ -2,11 +2,18 @@ TETRIS_INV.ITEM_TYPE_DEFAULT = {
     GetData = function( ent )
         return { ent:GetModel() }
     end,
-    GetDisplayInfo = function( itemData )
+    GetDisplayInfo = function( entClass, itemData )
         return {
-            Name = "Prop",
+            Name = entClass,
             Model = itemData[1]
         }
+    end,
+    DoDrop = function( ply, entClass, itemData )
+        local ent = ents.Create( entClass )
+        ent:SetPos( ply:GetPos()+ply:GetForward()*20+Vector( 0, 0, 20 ) )
+        ent:SetAngles( ply:GetAngles()+Angle( 180, 0, 0 ) )
+        ent:SetModel( itemData[1] )
+        ent:Spawn()
     end
 }
 
@@ -24,14 +31,25 @@ TETRIS_INV.ITEM_TYPES["spawned_weapon"] = {
     GetData = function( ent )
         return { ent:GetModel(), (ent.GetWeaponClass and ent:GetWeaponClass()) or "", ent:Getamount() }
     end,
-    GetSize = function( itemData )
+    GetSize = function( entClass, itemData )
         return TETRIS_INV.CONFIG.CustomSizes[itemData[2]] or { 4, 2 }
     end,
-    GetDisplayInfo = function( itemData )
+    GetDisplayInfo = function( entClass, itemData )
         return {
             Name = getWeaponName( itemData[2] ),
             Model = itemData[1]
         }
+    end,
+    DoDrop = function( ply, entClass, itemData )
+        local ent = ents.Create( "spawned_weapon" )
+        ent:SetPos( ply:GetPos()+ply:GetForward()*20+Vector( 0, 0, 20 ) )
+        ent:SetAngles( ply:GetAngles()+Angle( 180, 0, 0 ) )
+        ent:SetModel( itemData[1] )
+        ent:SetWeaponClass( itemData[2] )
+        ent:Spawn()
+    end,
+    DoUse = function( ply, entClass, itemData )
+        ply:Give( itemData[2] )
     end
 }
 
@@ -40,5 +58,5 @@ function TETRIS_INV.FUNC.GetEntData( ent )
 end
 
 function TETRIS_INV.FUNC.GetDisplayInfo( class, itemData )
-    return (TETRIS_INV.ITEM_TYPES[class] or TETRIS_INV.ITEM_TYPE_DEFAULT).GetDisplayInfo( itemData )
+    return (TETRIS_INV.ITEM_TYPES[class] or TETRIS_INV.ITEM_TYPE_DEFAULT).GetDisplayInfo( class, itemData )
 end

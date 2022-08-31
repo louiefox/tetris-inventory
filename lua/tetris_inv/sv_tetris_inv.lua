@@ -31,6 +31,10 @@ function TETRIS_INV.PLAYERMETA:NetworkItem( ... )
             net.WriteUInt( key, 10 )
 
             local item = inventoryTable[key]
+
+            net.WriteBool( tobool( item ) )
+            if( not item ) then continue end
+
             net.WriteString( item[1] )
             net.WriteUInt( item[2][1], 5 )
             net.WriteUInt( item[2][2], 5 )
@@ -54,7 +58,7 @@ function TETRIS_INV.PLAYERMETA:PickupEnt( ent )
     local itemTypeInfo = TETRIS_INV.ITEM_TYPES[entClass] or TETRIS_INV.ITEM_TYPE_DEFAULT
 
     local itemData = itemTypeInfo.GetData( ent )
-    local itemSize = itemTypeInfo.GetSize and itemTypeInfo.GetSize( itemData ) or TETRIS_INV.CONFIG.DefaultSize
+    local itemSize = itemTypeInfo.GetSize and itemTypeInfo.GetSize( entClass, itemData ) or TETRIS_INV.CONFIG.DefaultSize
 
     local success = self:AddItem( entClass, itemData, itemSize )
     if( not success ) then return end
@@ -96,6 +100,14 @@ function TETRIS_INV.PLAYERMETA:AddItem( class, itemData, itemSize )
     return true
 end
 
+function TETRIS_INV.PLAYERMETA:RemoveItem( itemKey )
+    local inventoryTable = self:GetInventory()
+    if( not inventoryTable[itemKey] ) then return false end
+
+    inventoryTable[itemKey] = nil
+    self:NetworkItem( itemKey )
+end
+
 util.AddNetworkString( "TetrisInv.RequestMoveItem" )
 net.Receive( "TetrisInv.RequestMoveItem", function( len, ply )
     local itemKey = net.ReadUInt( 10 )
@@ -111,4 +123,36 @@ net.Receive( "TetrisInv.RequestMoveItem", function( len, ply )
 	inventoryTable[itemKey][2][2] = newY
 
     ply:TetrisInv():SetInventory( inventoryTable )
+end )
+
+util.AddNetworkString( "TetrisInv.RequestUseItem" )
+net.Receive( "TetrisInv.RequestUseItem", function( len, ply )
+    local itemKey = net.ReadUInt( 10 )
+    if( not itemKey ) then return end
+
+    local itemTable = ply:TetrisInv():GetInventory()[itemKey]
+    if( not itemTable ) then return end
+
+    local itemTypeInfo = TETRIS_INV.ITEM_TYPES[itemTable[1]] or TETRIS_INV.ITEM_TYPE_DEFAULT
+    if( not itemTypeInfo.DoUse ) then return end
+
+    itemTypeInfo.DoUse( ply, itemTable[1], itemTable[3] )
+
+    ply:TetrisInv():RemoveItem( itemKey )
+end )
+
+util.AddNetworkString( "TetrisInv.RequestDropItem" )
+net.Receive( "TetrisInv.RequestDropItem", function( len, ply )
+    local itemKey = net.ReadUInt( 10 )
+    if( not itemKey ) then return end
+
+    local itemTable = ply:TetrisInv():GetInventory()[itemKey]
+    if( not itemTable ) then return end
+
+    local itemTypeInfo = TETRIS_INV.ITEM_TYPES[itemTable[1]] or TETRIS_INV.ITEM_TYPE_DEFAULT
+    if( not itemTypeInfo.DoDrop ) then return end
+
+    itemTypeInfo.DoDrop( ply, itemTable[1], itemTable[3] )
+
+    ply:TetrisInv():RemoveItem( itemKey )
 end )

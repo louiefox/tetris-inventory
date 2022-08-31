@@ -102,17 +102,39 @@ function PANEL:CreateItem( itemKey, itemInfo )
         end
     end
     itemPanel.OnMousePressed = function( self2, keyCode )
-        if( keyCode != MOUSE_LEFT ) then return end
+        if( keyCode == MOUSE_LEFT ) then
+            self2.dragStartX, self2.dragStartY = gui.MousePos()
+            self2.isDragging = true
+    
+            self.draggingItem = {
+                x = self2.itemX,
+                y = self2.itemY,
+                w = self2.itemW,
+                h = self2.itemH
+            }
+        elseif( keyCode == MOUSE_RIGHT ) then
+            local itemTypeInfo = TETRIS_INV.ITEM_TYPES[itemInfo.class] or TETRIS_INV.ITEM_TYPE_DEFAULT
 
-        self2.dragStartX, self2.dragStartY = gui.MousePos()
-        self2.isDragging = true
+            local menu = DermaMenu()
 
-        self.draggingItem = {
-            x = self2.itemX,
-            y = self2.itemY,
-            w = self2.itemW,
-            h = self2.itemH
-        }
+            if( itemTypeInfo.DoUse ) then 
+                menu:AddOption( "Use", function()
+                    net.Start( "TetrisInv.RequestUseItem" )
+                        net.WriteUInt( itemKey, 10 )
+                    net.SendToServer()
+                end )
+            end
+
+            if( itemTypeInfo.DoDrop ) then 
+                menu:AddOption( "Drop", function()
+                    net.Start( "TetrisInv.RequestDropItem" )
+                        net.WriteUInt( itemKey, 10 )
+                    net.SendToServer()
+                end )
+            end
+
+            menu:Open()
+        end
     end
     itemPanel.CancelDragging = function( self2 )
         self2.isDragging = false
@@ -208,13 +230,14 @@ function PANEL:CreateItems()
     local inventoryTable = LocalPlayer():TetrisInv():GetInventory()
     for k, v in pairs( inventoryTable ) do
         local itemTypeInfo = TETRIS_INV.ITEM_TYPES[v[1]] or TETRIS_INV.ITEM_TYPE_DEFAULT
-        local displayInfo = itemTypeInfo.GetDisplayInfo( v[3] )
+        local displayInfo = itemTypeInfo.GetDisplayInfo( v[1], v[3] )
 
         self:CreateItem( k, {
             x = v[2][1],
             y = v[2][2],
             w = v[2][3],
             h = v[2][4],
+            class = v[1],
             name = displayInfo.Name,
             -- durability = 20,
             -- maxDurability = 30,
