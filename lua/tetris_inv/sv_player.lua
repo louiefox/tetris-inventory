@@ -11,15 +11,14 @@ hook.Add( "PlayerInitialSpawn", "TetrisInv.PlayerInitialSpawn.LoadData", functio
 	TETRIS_INV.FUNC.SQLQuery( "SELECT * FROM tetrisinv_players WHERE steamID64 = '" .. ply:SteamID64() .. "';", function( data )
         if( data ) then
             local userID = tonumber( data.userID or "" ) or 1 
-            ply:Project0():SetUserID( userID )
+            ply:TetrisInv():SetUserID( userID )
 
 			hook.Run( "TetrisInv.Hooks.PlayerLoadData", ply, userID )
         else
             TETRIS_INV.FUNC.SQLQuery( "INSERT INTO tetrisinv_players( steamID64 ) VALUES(" .. ply:SteamID64() .. ");", function()
                 TETRIS_INV.FUNC.SQLQuery( "SELECT * FROM tetrisinv_players WHERE steamID64 = '" .. ply:SteamID64() .. "';", function( data )
                     if( data ) then
-                        local userID = tonumber( data.userID or "" ) or 1 
-                        ply:TetrisInv():SetUserID( userID )
+                        ply:TetrisInv():SetUserID( tonumber( data.userID )  )
                     else
                         ply:Kick( "ERROR: Could not create unique UserID, try rejoining!\n\nPlease contact support for TetrisInv on the workshop." )
                     end
@@ -29,9 +28,37 @@ hook.Add( "PlayerInitialSpawn", "TetrisInv.PlayerInitialSpawn.LoadData", functio
     end, true )
 end )
 
+hook.Add( "TetrisInv.Hooks.PlayerLoadData", "TetrisInv.Hooks.PlayerLoadData.LoadInventory", function( ply )
+    TETRIS_INV.FUNC.SQLQuery( "SELECT * FROM tetrisinv_inventory WHERE userID = '" .. ply:TetrisInv():GetUserID() .. "';", function( data )
+        if( not data or #data < 1 ) then return end
+
+        local inventoryTable = {}
+        for i = 1, #data do
+            local itemData = data[i]
+            inventoryTable[i] = {
+                itemData.entClass,
+                { 
+                    tonumber( itemData.transformX ), 
+                    tonumber( itemData.transformY ), 
+                    tonumber( itemData.transformW ), 
+                    tonumber( itemData.transformH ) 
+                },
+                util.JSONToTable( itemData.entData )
+            }
+        end
+
+        ply:TetrisInv():SetInventory( inventoryTable )
+        ply:TetrisInv():NetworkItem( table.GetKeys( inventoryTable ) )
+    end )
+end )
+
 util.AddNetworkString( "TetrisInv.SendInventoryItems" )
 function TETRIS_INV.PLAYERMETA:NetworkItem( ... )
     local keys = { ... }
+    if( istable( keys[1] ) ) then
+        keys = keys[1]
+    end
+
     local inventoryTable = self.InventoryTable
     net.Start( "TetrisInv.SendInventoryItems" )
         net.WriteUInt( #keys, 8 )
@@ -107,6 +134,9 @@ function TETRIS_INV.PLAYERMETA:AddItem( class, itemData, itemSize )
 
     self:NetworkItem( key )
 
+    TETRIS_INV.FUNC.SQLQuery( string.format( [[INSERT INTO tetrisinv_inventory( userID, entClass, transformX, transformY, transformW, transformH, entData ) 
+    VALUES( %d, %s, %d, %d, %d, %d, %s );]], self:GetUserID(), sql.SQLStr( class ), itemX, itemY, itemW, itemH, sql.SQLStr( util.TableToJSON( itemData ) ) ) )
+
     return true
 end
 
@@ -114,6 +144,11 @@ function TETRIS_INV.PLAYERMETA:RemoveItem( itemKey )
     local inventoryTable = self:GetInventory()
     if( not inventoryTable[itemKey] ) then return false end
 
+    local transformData = inventoryTable[itemKey][2]
+
     inventoryTable[itemKey] = nil
     self:NetworkItem( itemKey )
+
+    if( not transformData ) then return end
+    TETRIS_INV.FUNC.SQLQuery( string.format( "DELETE FROM tetrisinv_inventory WHERE userID=%d AND transformX=%d AND transformY=%d", self:GetUserID(), transformData[1], transformData[2] ) )
 end

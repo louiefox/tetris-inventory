@@ -25,3 +25,13 @@ TETRIS_INV.FUNC.SQLCreateTable( "tetrisinv_players", [[
 	userID INTEGER PRIMARY KEY AUTOINCREMENT,
 	steamID64 varchar(20) NOT NULL UNIQUE
 ]] )
+
+TETRIS_INV.FUNC.SQLCreateTable( "tetrisinv_inventory", [[
+	userID int,
+	entClass varchar(50),
+	transformX int,
+	transformY int,
+	transformW int,
+	transformH int,
+    entData TEXT
+]] )

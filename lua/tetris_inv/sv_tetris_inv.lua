@@ -30,10 +30,15 @@ net.Receive( "TetrisInv.RequestMoveItem", function( len, ply )
     local newX, newY = net.ReadUInt( 5 ), net.ReadUInt( 5 )
     if( not newX or not newY or newX == 0 or newY == 0 or newX > TETRIS_INV.CONFIG.GridX or newY > TETRIS_INV.CONFIG.GridY ) then return end
 
+    local oldX, oldY = inventoryTable[itemKey][2][1], inventoryTable[itemKey][2][2]
+
 	inventoryTable[itemKey][2][1] = newX
 	inventoryTable[itemKey][2][2] = newY
 
     ply:TetrisInv():SetInventory( inventoryTable )
+
+    TETRIS_INV.FUNC.SQLQuery( string.format( "UPDATE tetrisinv_inventory SET transformX=%d, transformY=%d WHERE userID=%d AND transformX=%d AND transformY=%d", 
+    newX, newY, ply:TetrisInv():GetUserID(), oldX, oldY ) )
 end )
 
 util.AddNetworkString( "TetrisInv.RequestUseItem" )
