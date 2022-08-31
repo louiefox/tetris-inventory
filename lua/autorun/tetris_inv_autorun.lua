@@ -6,6 +6,9 @@ TETRIS_INV = TETRIS_INV or {
 
 TETRIS_INV.PLAYERMETA.__index = TETRIS_INV.PLAYERMETA
 
+AddCSLuaFile( "sh_tetrisinv_config.lua" )
+include( "sh_tetrisinv_config.lua" )
+
 for _, v in ipairs( file.Find( "tetris_inv/*.lua", "LUA" ) ) do
     local isShared = string.StartWith( v, "sh_" )
 

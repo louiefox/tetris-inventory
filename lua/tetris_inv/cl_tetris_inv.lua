@@ -1,11 +1,3 @@
-if( not TETRIS_INV.LOCALPLYMETA ) then
-	TETRIS_INV.LOCALPLYMETA = {
-		Player = self
-	}
-
-	setmetatable( TETRIS_INV.LOCALPLYMETA, TETRIS_INV.PLAYERMETA )
-end
-
 hook.Add( "PlayerButtonDown", "TetrisInv.PlayerButtonDown.Open", function( ply, button )
 	if( button != KEY_I or IsValid( TETRIS_INV.TEMP.Menu ) ) then return end
     TETRIS_INV.TEMP.Menu = vgui.Create( "tetris_inv_main" )
@@ -25,26 +17,6 @@ end )
 
 net.Receive( "TetrisInv.SendNotification", function()
 	notification.AddLegacy( net.ReadString(), net.ReadUInt( 3 ), net.ReadUInt( 6 ) )
-end )
-
-net.Receive( "TetrisInv.SendInventoryItems", function()
-	local inventoryTable = TETRIS_INV.LOCALPLYMETA:GetInventory()
-	for i = 1, net.ReadUInt( 8 ) do
-		local itemKey = net.ReadUInt( 10 )
-		if( not net.ReadBool() ) then
-			inventoryTable[itemKey] = nil
-			continue 
-		end
-
-		inventoryTable[itemKey] = {
-			net.ReadString(),
-			{ net.ReadUInt( 5 ), net.ReadUInt( 5 ), net.ReadUInt( 5 ), net.ReadUInt( 5 ) },
-			net.ReadTable()
-		}
-	end
-
-	TETRIS_INV.LOCALPLYMETA.InventoryTable = inventoryTable
-	hook.Run( "TetrisInv.Hooks.UpdateInventory" )
 end )
 
 function TETRIS_INV.FUNC.RequestMoveItem( key, newX, newY )
