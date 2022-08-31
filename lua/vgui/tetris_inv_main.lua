@@ -65,7 +65,7 @@ function PANEL:Init()
     end )
 
     hook.Add( "TetrisInv.Hooks.UpdateInventory", self, function()
-        -- self:CreateItems()
+        self:CreateItems()
     end )
 end
 
@@ -204,7 +204,11 @@ function PANEL:CreateItem( itemKey, itemInfo )
 end
 
 function PANEL:CreateItems()
-    -- self.gridPanel:Clear()
+    for i = 1, #self.itemPanels do
+        self.itemPanels[i]:Remove()
+    end
+
+    self.itemPanels = {}
 
     -- local inventoryTable = {
     --     {

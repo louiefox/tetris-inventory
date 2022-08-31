@@ -44,6 +44,7 @@ net.Receive( "TetrisInv.SendInventoryItems", function()
 	end
 
 	TETRIS_INV.LOCALPLYMETA.InventoryTable = inventoryTable
+	hook.Run( "TetrisInv.Hooks.UpdateInventory" )
 end )
 
 function TETRIS_INV.FUNC.RequestMoveItem( key, newX, newY )
