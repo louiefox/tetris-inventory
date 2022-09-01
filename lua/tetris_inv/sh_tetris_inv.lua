@@ -16,7 +16,7 @@ function TETRIS_INV.FUNC.CanMoveItem( itemX, itemY, itemW, itemH, isRotated, ite
     for k, v in ipairs( items ) do
         if( not canMove ) then break end
 
-        local w, h = rotated and v[4] or v[3], rotated and v[3] or v[4]
+        local w, h = v[5] and v[4] or v[3], v[5] and v[3] or v[4]
         for y = v[2], v[2]+h-1 do
             if( not canMove ) then break end
             if( not takenSlots[y] ) then continue end

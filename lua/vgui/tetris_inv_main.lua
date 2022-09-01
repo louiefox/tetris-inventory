@@ -100,15 +100,15 @@ function PANEL:CreateItem( itemKey, itemInfo )
             return 
         end
 
-        surface.SetDrawColor( 21, 143, 46, 100 )
+        surface.SetDrawColor( 16, 44, 102, 200 )
         surface.DrawRect( 0, 0, w, h )
 
-        surface.SetDrawColor( 0, 0, 0 )
+        surface.SetDrawColor( 255, 255, 255, 15 )
         surface.SetMaterial( radialGradient )
         local gradientSize = math.max( w, h )
         surface.DrawTexturedRect( w/2-gradientSize/2, h/2-gradientSize/2, gradientSize, gradientSize )
 
-        surface.SetDrawColor( 9, 181, 44, 150 )
+        surface.SetDrawColor( 33, 85, 191 )
         surface.DrawOutlinedRect( 0, 0, w, h )
 
         draw.SimpleTextOutlined( string.upper( displayInfo.Name ), "MontserratMedium12", w-5, 3, TETRIS_INV.COLOR.White, TEXT_ALIGN_RIGHT, 0, 1, TETRIS_INV.COLOR.Black )
@@ -130,7 +130,7 @@ function PANEL:CreateItem( itemKey, itemInfo )
                 rotated = isRotated
             }
         elseif( keyCode == MOUSE_RIGHT ) then
-            local itemTypeInfo = TETRIS_INV.ITEM_TYPES[itemInfo.class] or TETRIS_INV.ITEM_TYPE_DEFAULT
+            local itemTypeInfo = TETRIS_INV.ITEM_TYPES[itemInfo[1]] or TETRIS_INV.ITEM_TYPE_DEFAULT
 
             local menu = DermaMenu()
 
@@ -196,23 +196,38 @@ function PANEL:CreateItem( itemKey, itemInfo )
 
     table.insert( self.itemPanels, itemPanel )
 
+    local itemPanelW, itemPanelH = itemPanel:GetSize()
+    local maxPanelSize = math.max( itemPanelW, itemPanelH )
+
     local modelPanel = vgui.Create( "DModelPanel", itemPanel )
-    modelPanel:Dock( FILL )
+    modelPanel:SetSize( maxPanelSize, maxPanelSize )
+    modelPanel:SetPos( itemPanelW/2-modelPanel:GetWide()/2, itemPanelH/2-modelPanel:GetTall()/2 )
     modelPanel:SetModel( displayInfo.Model )
     modelPanel.LayoutEntity = function() end
     modelPanel.OnMousePressed = function( self2, keyCode ) itemPanel:OnMousePressed( keyCode ) end
     modelPanel.OnMouseReleased = function( self2, keyCode ) itemPanel:OnMouseReleased( keyCode ) end
 
     if( IsValid( modelPanel.Entity ) ) then 
-        local mn, mx = modelPanel.Entity:GetRenderBounds()
-        local size = 0
-        size = math.max( size, math.abs(mn.x) + math.abs(mx.x) )
-        size = math.max( size, math.abs(mn.y) + math.abs(mx.y) )
-        size = math.max( size, math.abs(mn.z) + math.abs(mx.z) )
+        local min, max = modelPanel.Entity:GetRenderBounds()
 
-        modelPanel:SetCamPos( Vector( size, size, size ) )
-        modelPanel:SetLookAt( (mn + mx) * 0.5 )
-        -- modelPanel:SetFOV( 50 )
+        local function getOffset( val )
+            return math.abs( min[val] )-(max[val]-min[val])/2
+        end
+        
+        -- If the x width of the model is larger rotate it 90 degrees
+        local xDiff, yDiff = max[1]-min[1], max[2]-min[2]
+
+        if( xDiff > yDiff ) then
+            modelPanel.Entity:SetPos( Vector( getOffset( 2 ), getOffset( 1 ), getOffset( 3 ) ) )
+            modelPanel.Entity:SetAngles( Angle( 0, 90, 0 ) )
+        else
+            modelPanel.Entity:SetPos( Vector( getOffset( 1 ), getOffset( 2 ), getOffset( 3 ) ) )
+        end
+
+        local modelWidth = math.max( xDiff, yDiff )
+        modelPanel:SetCamPos( Vector( -modelWidth*4/itemW, 0, 0 ) )
+        modelPanel:SetLookAt( Vector( 0, 0, 0 ) )
+        modelPanel:SetLookAng( Angle( 0, 0, isRotated and -90 or 0 ) )
     end
 end
 
