@@ -19,22 +19,18 @@ net.Receive( "TetrisInv.SendNotification", function()
 	notification.AddLegacy( net.ReadString(), net.ReadUInt( 3 ), net.ReadUInt( 6 ) )
 end )
 
-function TETRIS_INV.FUNC.RequestMoveItem( key, newX, newY )
+function TETRIS_INV.FUNC.RequestMoveItem( key, newX, newY, isRotated )
 	local inventoryTable = TETRIS_INV.LOCALPLYMETA:GetInventory()
 
-	local itemTransforms = {}
-    for k, v in pairs( inventoryTable ) do
-		if( k == key ) then continue end
-        table.insert( itemTransforms, v[2] )
-    end
-
-	if( not TETRIS_INV.FUNC.CanMoveItem( newX, newY, inventoryTable[key][2][3], inventoryTable[key][2][4], itemTransforms ) ) then 
+	local transformData = inventoryTable[key][2]
+	if( not TETRIS_INV.FUNC.CanMoveItem( newX, newY, transformData[3], transformData[4], isRotated, TETRIS_INV.FUNC.GetItemTransforms( inventoryTable, key ) ) ) then 
 		hook.Run( "TetrisInv.Hooks.UpdateInventory" )
 		return
 	end
 
-	inventoryTable[key][2][1] = newX
-	inventoryTable[key][2][2] = newY
+	transformData[1] = newX
+	transformData[2] = newY
+	transformData[5] = isRotated
 
 	TETRIS_INV.LOCALPLYMETA.InventoryTable = inventoryTable
 
@@ -42,7 +38,10 @@ function TETRIS_INV.FUNC.RequestMoveItem( key, newX, newY )
 		net.WriteUInt( key, 10 )
 		net.WriteUInt( newX, 5 )
 		net.WriteUInt( newY, 5 )
+		net.WriteBool( isRotated )
 	net.SendToServer()
+
+	hook.Run( "TetrisInv.Hooks.UpdateInventory" )
 end
 
 -- Probably laggy, however I wanted to use shadows and blur

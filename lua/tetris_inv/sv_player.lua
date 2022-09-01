@@ -41,7 +41,8 @@ hook.Add( "TetrisInv.Hooks.PlayerLoadData", "TetrisInv.Hooks.PlayerLoadData.Load
                     tonumber( itemData.transformX ), 
                     tonumber( itemData.transformY ), 
                     tonumber( itemData.transformW ), 
-                    tonumber( itemData.transformH ) 
+                    tonumber( itemData.transformH ),
+                    itemData.transformIsRotated == "1"
                 },
                 util.JSONToTable( itemData.entData )
             }
@@ -77,6 +78,7 @@ function TETRIS_INV.PLAYERMETA:NetworkItem( ... )
             net.WriteUInt( item[2][2], 5 )
             net.WriteUInt( item[2][3], 5 )
             net.WriteUInt( item[2][4], 5 )
+            net.WriteBool( item[2][5] )
             net.WriteTable( item[3] )
         end
     net.Send( self.Player )
@@ -115,7 +117,7 @@ function TETRIS_INV.PLAYERMETA:AddItem( class, itemData, itemSize )
     local itemW, itemH = itemSize[1], itemSize[2]
     for row = 1, TETRIS_INV.CONFIG.GridY-(itemH-1) do
         for col = 1, TETRIS_INV.CONFIG.GridX-(itemW-1) do
-            if( not TETRIS_INV.FUNC.CanMoveItem( col, row, itemW, itemH, itemTransforms ) ) then continue end
+            if( not TETRIS_INV.FUNC.CanMoveItem( col, row, itemW, itemH, false, itemTransforms ) ) then continue end
 
             itemX, itemY = col, row
             break
@@ -129,13 +131,13 @@ function TETRIS_INV.PLAYERMETA:AddItem( class, itemData, itemSize )
         return false
     end
 
-    local key = table.insert( inventoryTable, { class, { itemX, itemY, itemW, itemH }, itemData } )
+    local key = table.insert( inventoryTable, { class, { itemX, itemY, itemW, itemH, false }, itemData } )
     self:SetInventory( inventoryTable )
 
     self:NetworkItem( key )
 
-    TETRIS_INV.FUNC.SQLQuery( string.format( [[INSERT INTO tetrisinv_inventory( userID, entClass, transformX, transformY, transformW, transformH, entData ) 
-    VALUES( %d, %s, %d, %d, %d, %d, %s );]], self:GetUserID(), sql.SQLStr( class ), itemX, itemY, itemW, itemH, sql.SQLStr( util.TableToJSON( itemData ) ) ) )
+    TETRIS_INV.FUNC.SQLQuery( string.format( [[INSERT INTO tetrisinv_inventory( userID, entClass, transformX, transformY, transformW, transformH, transformIsRotated, entData ) 
+    VALUES( %d, %s, %d, %d, %d, %d, %d, %s );]], self:GetUserID(), sql.SQLStr( class ), itemX, itemY, itemW, itemH, 0, sql.SQLStr( util.TableToJSON( itemData ) ) ) )
 
     return true
 end

@@ -67,16 +67,32 @@ function PANEL:Init()
     hook.Add( "TetrisInv.Hooks.UpdateInventory", self, function()
         self:CreateItems()
     end )
+
+    hook.Add( "KeyPress", self, function( self, ply, key )
+        if( not self.draggingItem or key != IN_RELOAD ) then return end
+        self.draggingItem.rotated = not self.draggingItem.rotated
+        self.draggingItem.w, self.draggingItem.h = self.draggingItem.h, self.draggingItem.w
+    end )
 end
 
 local radialGradient = Material( "tetris_inv/gradient_radial.png" )
 function PANEL:CreateItem( itemKey, itemInfo )
+    local itemTypeInfo = TETRIS_INV.ITEM_TYPES[itemInfo[1]] or TETRIS_INV.ITEM_TYPE_DEFAULT
+    local displayInfo = itemTypeInfo.GetDisplayInfo( itemInfo[1], itemInfo[3] )
+
+    local transformData = itemInfo[2]
+    local itemX, itemY, itemW, itemH = transformData[1], transformData[2], transformData[3], transformData[4]
+
+    local isRotated = transformData[5]
+    local actualW, actualH = isRotated and itemH or itemW, isRotated and itemW or itemH
+
     local itemPanel = vgui.Create( "DButton", self.gridPanel )
-    itemPanel:SetPos( (itemInfo.x-1)*(self.slotSize+self.slotSpacing), (itemInfo.y-1)*(self.slotSize+self.slotSpacing) )
-    itemPanel:SetSize( itemInfo.w*(self.slotSize+self.slotSpacing)-self.slotSpacing, itemInfo.h*(self.slotSize+self.slotSpacing)-self.slotSpacing )
+    itemPanel:SetPos( (itemX-1)*(self.slotSize+self.slotSpacing), (itemY-1)*(self.slotSize+self.slotSpacing) )
+    itemPanel:SetSize( actualW*(self.slotSize+self.slotSpacing)-self.slotSpacing, actualH*(self.slotSize+self.slotSpacing)-self.slotSpacing )
     itemPanel:SetText( "" )
-    itemPanel.itemX, itemPanel.itemY = itemInfo.x, itemInfo.y
-    itemPanel.itemW, itemPanel.itemH = itemInfo.w, itemInfo.h
+    itemPanel.itemX, itemPanel.itemY = transformData[1], transformData[2]
+    itemPanel.itemW, itemPanel.itemH = transformData[3], transformData[4]
+    itemPanel.isRotated = isRotated
     itemPanel.Paint = function( self2, w, h )
         if( self2.isDragging ) then 
             surface.SetDrawColor( 0, 0, 0, 100 )
@@ -95,11 +111,11 @@ function PANEL:CreateItem( itemKey, itemInfo )
         surface.SetDrawColor( 9, 181, 44, 150 )
         surface.DrawOutlinedRect( 0, 0, w, h )
 
-        draw.SimpleTextOutlined( string.upper( itemInfo.name ), "MontserratMedium12", w-5, 3, TETRIS_INV.COLOR.White, TEXT_ALIGN_RIGHT, 0, 1, TETRIS_INV.COLOR.Black )
+        draw.SimpleTextOutlined( string.upper( displayInfo.Name ), "MontserratMedium12", w-5, 3, TETRIS_INV.COLOR.White, TEXT_ALIGN_RIGHT, 0, 1, TETRIS_INV.COLOR.Black )
 
-        if( itemInfo.durability ) then
-            draw.SimpleTextOutlined( itemInfo.durability .. "/" .. itemInfo.maxDurability, "MontserratMedium12", w-5, h-3, TETRIS_INV.COLOR.White, TEXT_ALIGN_RIGHT, TEXT_ALIGN_BOTTOM, 1, TETRIS_INV.COLOR.Black )
-        end
+        -- if( itemInfo.durability ) then
+        --     draw.SimpleTextOutlined( itemInfo.durability .. "/" .. itemInfo.maxDurability, "MontserratMedium12", w-5, h-3, TETRIS_INV.COLOR.White, TEXT_ALIGN_RIGHT, TEXT_ALIGN_BOTTOM, 1, TETRIS_INV.COLOR.Black )
+        -- end
     end
     itemPanel.OnMousePressed = function( self2, keyCode )
         if( keyCode == MOUSE_LEFT ) then
@@ -109,8 +125,9 @@ function PANEL:CreateItem( itemKey, itemInfo )
             self.draggingItem = {
                 x = self2.itemX,
                 y = self2.itemY,
-                w = self2.itemW,
-                h = self2.itemH
+                w = isRotated and self2.itemH or self2.itemW,
+                h = isRotated and self2.itemW or self2.itemH,
+                rotated = isRotated
             }
         elseif( keyCode == MOUSE_RIGHT ) then
             local itemTypeInfo = TETRIS_INV.ITEM_TYPES[itemInfo.class] or TETRIS_INV.ITEM_TYPE_DEFAULT
@@ -140,9 +157,9 @@ function PANEL:CreateItem( itemKey, itemInfo )
         self2.isDragging = false
 
         if( self.draggingItem and not self.draggingItem.blocked ) then 
-            self2.itemX, self2.itemY = self2.hoverItemX or itemInfo.x, self2.hoverItemY or itemInfo.y
+            self2.itemX, self2.itemY = self2.hoverItemX or itemX, self2.hoverItemY or itemY
             self2:SetPos( (self2.itemX-1)*(self.slotSize+self.slotSpacing), (self2.itemY-1)*(self.slotSize+self.slotSpacing) )
-            TETRIS_INV.FUNC.RequestMoveItem( itemKey, self2.itemX, self2.itemY )
+            TETRIS_INV.FUNC.RequestMoveItem( itemKey, self2.itemX, self2.itemY, self.draggingItem.rotated )
         end
 
         self2.hoverItemX, self2.hoverItemY = nil, nil
@@ -160,24 +177,20 @@ function PANEL:CreateItem( itemKey, itemInfo )
         end
 
         local mouseX, mouseY = gui.MousePos()
-        local newX = math.Clamp( self2.itemX+math.Round( (mouseX-self2.dragStartX)/self.slotSize, 0 ), 1, TETRIS_INV.CONFIG.GridX-self2.itemW+1 )
-        local newY = math.Clamp( self2.itemY+math.Round( (mouseY-self2.dragStartY)/self.slotSize, 0 ), 1, TETRIS_INV.CONFIG.GridY-self2.itemH+1 )
+        local newX = math.Clamp( self2.itemX+math.Round( (mouseX-self2.dragStartX)/self.slotSize, 0 ), 1, TETRIS_INV.CONFIG.GridX-self.draggingItem.w+1 )
+        local newY = math.Clamp( self2.itemY+math.Round( (mouseY-self2.dragStartY)/self.slotSize, 0 ), 1, TETRIS_INV.CONFIG.GridY-self.draggingItem.h+1 )
 
-        if( newX == self2.hoverItemX and newY == self2.hoverItemY ) then return end
+        if( newX == self2.hoverItemX and newY == self2.hoverItemY and self.draggingItem.rotated == self2.isRotated ) then return end
         self2.hoverItemX, self2.hoverItemY = newX, newY
-
-        local items = {}
-        for k, v in ipairs( self.itemPanels ) do
-            if( v == self2 ) then continue end
-            table.insert( items, { v.itemX, v.itemY, v.itemW, v.itemH } )
-        end
+        self2.isRotated = self.draggingItem.rotated
 
         self.draggingItem = {
-            blocked = (newX == self2.itemX and newY == self2.itemY) or not TETRIS_INV.FUNC.CanMoveItem( newX, newY, self2.itemW, self2.itemH, items ),
+            blocked = (newX == self2.itemX and newY == self2.itemY and self.draggingItem.rotated == isRotated) or not TETRIS_INV.FUNC.CanMoveItem( newX, newY, self2.itemW, self2.itemH, self.draggingItem.rotated, TETRIS_INV.FUNC.GetItemTransforms( LocalPlayer():TetrisInv():GetInventory(), itemKey ) ),
             x = newX,
             y = newY,
-            w = self2.itemW,
-            h = self2.itemH
+            w = self.draggingItem.w,
+            h = self.draggingItem.h,
+            rotated = self.draggingItem.rotated
         }
     end
 
@@ -185,7 +198,7 @@ function PANEL:CreateItem( itemKey, itemInfo )
 
     local modelPanel = vgui.Create( "DModelPanel", itemPanel )
     modelPanel:Dock( FILL )
-    modelPanel:SetModel( itemInfo.model )
+    modelPanel:SetModel( displayInfo.Model )
     modelPanel.LayoutEntity = function() end
     modelPanel.OnMousePressed = function( self2, keyCode ) itemPanel:OnMousePressed( keyCode ) end
     modelPanel.OnMouseReleased = function( self2, keyCode ) itemPanel:OnMouseReleased( keyCode ) end
@@ -233,20 +246,7 @@ function PANEL:CreateItems()
 
     local inventoryTable = LocalPlayer():TetrisInv():GetInventory()
     for k, v in pairs( inventoryTable ) do
-        local itemTypeInfo = TETRIS_INV.ITEM_TYPES[v[1]] or TETRIS_INV.ITEM_TYPE_DEFAULT
-        local displayInfo = itemTypeInfo.GetDisplayInfo( v[1], v[3] )
-
-        self:CreateItem( k, {
-            x = v[2][1],
-            y = v[2][2],
-            w = v[2][3],
-            h = v[2][4],
-            class = v[1],
-            name = displayInfo.Name,
-            -- durability = 20,
-            -- maxDurability = 30,
-            model = displayInfo.Model
-        } )
+        self:CreateItem( k, v )
     end
 end
 

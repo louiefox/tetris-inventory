@@ -21,7 +21,7 @@ net.Receive( "TetrisInv.SendInventoryItems", function()
 
 		inventoryTable[itemKey] = {
 			net.ReadString(),
-			{ net.ReadUInt( 5 ), net.ReadUInt( 5 ), net.ReadUInt( 5 ), net.ReadUInt( 5 ) },
+			{ net.ReadUInt( 5 ), net.ReadUInt( 5 ), net.ReadUInt( 5 ), net.ReadUInt( 5 ), net.ReadBool() },
 			net.ReadTable()
 		}
 	end

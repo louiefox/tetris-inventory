@@ -33,5 +33,6 @@ TETRIS_INV.FUNC.SQLCreateTable( "tetrisinv_inventory", [[
 	transformY int,
 	transformW int,
 	transformH int,
+    transformIsRotated int,
     entData TEXT
 ]] )
