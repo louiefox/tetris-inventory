@@ -5,7 +5,8 @@ TETRIS_INV.ITEM_TYPE_DEFAULT = {
     GetDisplayInfo = function( entClass, itemData )
         return {
             Name = entClass,
-            Model = itemData[1]
+            Model = itemData[1],
+            Rarity = TETRIS_INV.CONFIG.RarityList[entClass] or TETRIS_INV.CONFIG.DefaultRarity
         }
     end,
     DoDrop = function( ply, entClass, itemData )
@@ -37,7 +38,8 @@ TETRIS_INV.ITEM_TYPES["spawned_weapon"] = {
     GetDisplayInfo = function( entClass, itemData )
         return {
             Name = getWeaponName( itemData[2] ),
-            Model = itemData[1]
+            Model = itemData[1],
+            Rarity = TETRIS_INV.CONFIG.RarityList[itemData[2]] or TETRIS_INV.CONFIG.DefaultRarity
         }
     end,
     DoDrop = function( ply, entClass, itemData )

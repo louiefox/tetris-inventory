@@ -86,6 +86,11 @@ function PANEL:CreateItem( itemKey, itemInfo )
     local isRotated = transformData[5]
     local actualW, actualH = isRotated and itemH or itemW, isRotated and itemW or itemH
 
+    local rarityConfig = TETRIS_INV.CONFIG.Rarities[displayInfo.Rarity] or TETRIS_INV.CONFIG.Rarities[TETRIS_INV.CONFIG.DefaultRarity]
+    if( not rarityConfig ) then
+        error( "[TETRISINV] ERROR: Invalid default rarity!" )
+    end
+
     local itemPanel = vgui.Create( "DButton", self.gridPanel )
     itemPanel:SetPos( (itemX-1)*(self.slotSize+self.slotSpacing), (itemY-1)*(self.slotSize+self.slotSpacing) )
     itemPanel:SetSize( actualW*(self.slotSize+self.slotSpacing)-self.slotSpacing, actualH*(self.slotSize+self.slotSpacing)-self.slotSpacing )
@@ -100,7 +105,7 @@ function PANEL:CreateItem( itemKey, itemInfo )
             return 
         end
 
-        surface.SetDrawColor( 16, 44, 102, 200 )
+        surface.SetDrawColor( rarityConfig.BackgroundColor.r, rarityConfig.BackgroundColor.g, rarityConfig.BackgroundColor.b, 200 )
         surface.DrawRect( 0, 0, w, h )
 
         surface.SetDrawColor( 255, 255, 255, 15 )
@@ -108,7 +113,7 @@ function PANEL:CreateItem( itemKey, itemInfo )
         local gradientSize = math.max( w, h )
         surface.DrawTexturedRect( w/2-gradientSize/2, h/2-gradientSize/2, gradientSize, gradientSize )
 
-        surface.SetDrawColor( 33, 85, 191 )
+        surface.SetDrawColor( rarityConfig.BorderColor )
         surface.DrawOutlinedRect( 0, 0, w, h )
 
         draw.SimpleTextOutlined( string.upper( displayInfo.Name ), "MontserratMedium12", w-5, 3, TETRIS_INV.COLOR.White, TEXT_ALIGN_RIGHT, 0, 1, TETRIS_INV.COLOR.Black )
