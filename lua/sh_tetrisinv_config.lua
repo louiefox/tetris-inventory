@@ -15,6 +15,7 @@ TETRIS_INV.CONFIG.CustomSizes = {
     ["ent_class"] = { 2, 4 },
     ["weapon_class"] = { 4, 4 },
 
+    -- DarkRP Weapons
     ["weapon_ak472"] = { 4, 2 },
     ["weapon_m42"] = { 4, 2 },
     ["weapon_pumpshotgun2"] = { 4, 1 },

@@ -25,6 +25,14 @@ local function createFonts()
 		outline = false,
 	} )
 
+	surface.CreateFont( "MontserratMedium13", {
+		font = "Montserrat Medium",
+		extended = false,
+		size = TETRIS_INV.FUNC.ScreenScale( 13 ),
+		weight = 500,
+		outline = false,
+	} )
+
 	surface.CreateFont( "MontserratMedium25", {
 		font = "Montserrat Medium",
 		extended = false,

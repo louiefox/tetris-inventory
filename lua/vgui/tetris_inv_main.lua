@@ -1,17 +1,51 @@
 local PANEL = {}
 
 function PANEL:Init()
+    surface.SetFont( "MontserratMedium13" )
+
+    local headerPanel = vgui.Create( "Panel", self )
+    headerPanel:SetSize( surface.GetTextSize( "INVENTORY" )+TETRIS_INV.FUNC.ScreenScale( 20 ), TETRIS_INV.FUNC.ScreenScale( 20 ) )
+    headerPanel.Paint = function( self2, w, h )
+        local edge = 5
+
+        surface.SetDrawColor( 0, 0, 0 )
+        draw.NoTexture()
+        surface.DrawPoly( {
+            { x = 0, y = 0 },
+            { x = w-edge, y = 0 },
+            { x = w, y = edge },
+            { x = w, y = h },
+            { x = 0, y = h }
+        } )
+
+        draw.SimpleText( "INVENTORY", "MontserratMedium13", w/2, h/2, TETRIS_INV.COLOR.White, TEXT_ALIGN_CENTER, TEXT_ALIGN_CENTER )
+    end
+
+    local mainPanel = vgui.Create( "Panel", self )
+    mainPanel:SetY( headerPanel:GetTall() )
+    mainPanel.Paint = function( self2, w, h )
+        surface.SetDrawColor( 0, 0, 0, 100 )
+        surface.DrawRect( 0, 0, w, h )
+    
+        TETRIS_INV.FUNC.DrawBlur( self2, 4, 4 )
+    
+        surface.SetDrawColor( 0, 0, 0, 150 )
+        surface.DrawOutlinedRect( 0, 0, w, h )
+    end
+
     local slotSize = TETRIS_INV.FUNC.ScreenScale( 50 )
     local outerMargin = TETRIS_INV.FUNC.ScreenScale( 25 )
     local slotSpacing = 1--TETRIS_INV.FUNC.ScreenScale( 25 )
 
     self.slotSize, self.slotSpacing = slotSize, slotSpacing
 
-    self.gridPanel = vgui.Create( "Panel", self )
+    self.gridPanel = vgui.Create( "Panel", mainPanel )
     self.gridPanel:SetSize( TETRIS_INV.CONFIG.GridX*(slotSize+slotSpacing)-slotSpacing, TETRIS_INV.CONFIG.GridY*(slotSize+slotSpacing)-slotSpacing )
     self.gridPanel:SetPos( outerMargin, outerMargin )
 
-    self:SetSize( self.gridPanel:GetWide()+2*outerMargin, self.gridPanel:GetTall()+2*outerMargin )
+    mainPanel:SetSize( self.gridPanel:GetWide()+2*outerMargin, self.gridPanel:GetTall()+2*outerMargin )
+
+    self:SetSize( mainPanel:GetWide(), headerPanel:GetTall()+mainPanel:GetTall() )
     self:SetPos( ScrW()*0.9-self:GetWide(), ScrH()/2-self:GetTall()/2 )
 
     gui.EnableScreenClicker( true )
@@ -281,13 +315,7 @@ function PANEL:OnRemove()
 end
 
 function PANEL:Paint( w, h )
-    surface.SetDrawColor( 0, 0, 0, 100 )
-    surface.DrawRect( 0, 0, w, h )
 
-    TETRIS_INV.FUNC.DrawBlur( self, 4, 4 )
-
-    surface.SetDrawColor( 0, 0, 0, 150 )
-    surface.DrawOutlinedRect( 0, 0, w, h )
 end
 
 vgui.Register( "tetris_inv_main", PANEL, "Panel" )
