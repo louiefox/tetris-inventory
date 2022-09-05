@@ -65,7 +65,7 @@ hook.Add( "HUDPaint", "TetrisInv.HUDPaint.DrawPickup", function()
 
 	surface.SetAlphaMultiplier( pickupAlpha/255 )
 
-	local bindText = input.LookupBinding( "+walk" ) .. "+" .. input.LookupBinding( "+use" )
+	local bindText = (input.LookupBinding( "+walk" ) or "UNBOUND") .. "+" .. (input.LookupBinding( "+use" ) or "UNBOUND")
 	local text = string.upper( bindText .. " PICKUP " .. currentInfo.Name )
 	surface.SetFont( "MontserratMedium25" )
 	local textW, textH = surface.GetTextSize( text )

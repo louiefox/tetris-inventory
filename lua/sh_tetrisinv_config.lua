@@ -1,17 +1,17 @@
 TETRIS_INV.CONFIG = {}
 
-TETRIS_INV.CONFIG.GridX = 8
-TETRIS_INV.CONFIG.GridY = 10
-TETRIS_INV.CONFIG.PickupDistance = 7500
+TETRIS_INV.CONFIG.GridX = 8 -- The width of the inventory (should be no higher than 30)
+TETRIS_INV.CONFIG.GridY = 10 -- The height of the inventory (should be no higher than 30)
+TETRIS_INV.CONFIG.PickupDistance = 7500 -- How far away a player can pick up items from
 
-TETRIS_INV.CONFIG.IsWhitelist = true
-TETRIS_INV.CONFIG.ListedEntities = {
-    ["prop_physics"] = true,
+TETRIS_INV.CONFIG.IsWhitelist = true -- Whether the list is a blacklist or whitelist
+TETRIS_INV.CONFIG.ListedEntities = { -- Entities that can/cant be picked up
+    ["prop_physics"] = true, -- Value in [] is the entity class
     ["spawned_weapon"] = true
 }
 
-TETRIS_INV.CONFIG.DefaultSize = { 2, 2 }
-TETRIS_INV.CONFIG.CustomSizes = {
+TETRIS_INV.CONFIG.DefaultSize = { 2, 2 } -- The default item size (width, height)
+TETRIS_INV.CONFIG.CustomSizes = { -- Custom item sizes entity/weapon class and then (width, height)
     ["ent_class"] = { 2, 4 },
     ["weapon_class"] = { 4, 4 },
 
@@ -28,12 +28,12 @@ TETRIS_INV.CONFIG.CustomSizes = {
     ["weapon_p2282"] = { 2, 1 },
 }
 
-TETRIS_INV.CONFIG.DefaultRarity = "uncommon"
+TETRIS_INV.CONFIG.DefaultRarity = "uncommon" -- Default item rarity
 TETRIS_INV.CONFIG.Rarities = {
-    ["common"] = {
-        Name = "Common",
-        BackgroundColor = Color( 98, 99, 99 ),
-        BorderColor = Color( 181, 181, 181 )
+    ["common"] = { -- Unique name, should be lower case and no spaces
+        Name = "Common", -- Name of rarity
+        BackgroundColor = Color( 98, 99, 99 ), -- Background color
+        BorderColor = Color( 181, 181, 181 ) -- Border color
     },
     ["uncommon"] = {
         Name = "Uncommon",
@@ -52,9 +52,10 @@ TETRIS_INV.CONFIG.Rarities = {
     }
 }
 
-TETRIS_INV.CONFIG.RarityList = {
-    ["ent_class"] = "rare",
-    ["weapon_class"] = "rare",
+TETRIS_INV.CONFIG.RarityList = { -- List of items and their rarities
+    ["ent_class"] = "rare", -- Entity class
+    ["weapon_class"] = "rare", -- Weapon class
+
     ["weapon_rpg"] = "rare",
     ["weapon_m42"] = "epic"
 }
