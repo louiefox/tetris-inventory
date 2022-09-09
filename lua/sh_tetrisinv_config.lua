@@ -1,5 +1,7 @@
 TETRIS_INV.CONFIG = {}
 
+TETRIS_INV.CONFIG.InventoryKey = KEY_I -- The key used to open the inventory. List: https://wiki.facepunch.com/gmod/Enums/KEY
+
 TETRIS_INV.CONFIG.GridX = 8 -- The width of the inventory (should be no higher than 30)
 TETRIS_INV.CONFIG.GridY = 10 -- The height of the inventory (should be no higher than 30)
 TETRIS_INV.CONFIG.PickupDistance = 7500 -- How far away a player can pick up items from

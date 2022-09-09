@@ -1,7 +1,7 @@
 if( game.SinglePlayer() ) then
     util.AddNetworkString( "TetrisInv.SendOpenInventory" )
 	hook.Add( "PlayerButtonDown", "TetrisInv.PlayerButtonDown.Open", function( ply, button )
-		if( button != KEY_I ) then return end
+		if( button != TETRIS_INV.CONFIG.InventoryKey ) then return end
 		net.Start( "TetrisInv.SendOpenInventory" )
         net.Send( ply )
 	end )
