@@ -1,8 +1,19 @@
-hook.Add( "PlayerButtonDown", "TetrisInv.PlayerButtonDown.Open", function( ply, button )
-	if( button != KEY_I or IsValid( TETRIS_INV.TEMP.Menu ) ) then return end
-    TETRIS_INV.TEMP.Menu = vgui.Create( "tetris_inv_main" )
-    TETRIS_INV.TEMP.KeyStillDown = true
-end )
+if( not game.SinglePlayer() ) then
+	hook.Add( "PlayerButtonDown", "TetrisInv.PlayerButtonDown.Open", function( ply, button )
+		if( button != KEY_I or IsValid( TETRIS_INV.TEMP.Menu ) ) then return end
+		TETRIS_INV.TEMP.Menu = vgui.Create( "tetris_inv_main" )
+		TETRIS_INV.TEMP.KeyStillDown = true
+	end )
+else
+	net.Receive( "TetrisInv.SendOpenInventory", function()
+		if( IsValid( TETRIS_INV.TEMP.Menu ) ) then 
+			TETRIS_INV.TEMP.Menu:Remove()
+			return 
+		end
+
+		TETRIS_INV.TEMP.Menu = vgui.Create( "tetris_inv_main" )
+	end )
+end
 
 hook.Add( "PlayerButtonUp", "TetrisInv.PlayerButtonUp.Close", function( ply, button )
     if( button != KEY_I or not IsValid( TETRIS_INV.TEMP.Menu ) ) then return end
