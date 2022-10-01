@@ -49,6 +49,7 @@ TETRIS_INV.ITEM_TYPES["spawned_weapon"] = {
         ent:SetModel( itemData[1] )
         ent:SetWeaponClass( itemData[2] )
         ent:Spawn()
+        ent.clip1 = itemData[4] or 0
     end,
     DoUse = function( ply, entClass, itemData )
         local weapon = ply:Give( itemData[2], true )
