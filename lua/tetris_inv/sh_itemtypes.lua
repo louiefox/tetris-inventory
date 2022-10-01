@@ -30,7 +30,7 @@ end
 
 TETRIS_INV.ITEM_TYPES["spawned_weapon"] = {
     GetData = function( ent )
-        return { ent:GetModel(), (ent.GetWeaponClass and ent:GetWeaponClass()) or "", ent:Getamount() }
+        return { ent:GetModel(), (ent.GetWeaponClass and ent:GetWeaponClass()) or "", ent:Getamount(), ent.clip1 or 0 }
     end,
     GetSize = function( entClass, itemData )
         return TETRIS_INV.CONFIG.CustomSizes[itemData[2]] or { 4, 2 }
@@ -51,7 +51,10 @@ TETRIS_INV.ITEM_TYPES["spawned_weapon"] = {
         ent:Spawn()
     end,
     DoUse = function( ply, entClass, itemData )
-        ply:Give( itemData[2] )
+        local weapon = ply:Give( itemData[2], true )
+        if( not itemData[4] or not IsValid( weapon ) ) then return end
+
+        weapon:SetClip1( itemData[4] )
     end
 }
 
