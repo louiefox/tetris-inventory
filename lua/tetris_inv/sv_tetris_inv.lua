@@ -8,7 +8,7 @@ if( game.SinglePlayer() ) then
 end
 
 hook.Add( "KeyPress", "TetrisInv.KeyPress.Pickup", function( ply, key )
-    if( key == IN_WALK ) then
+    if( key == IN_SHIFT ) then
         ply.TETRISINV_PICKUP_STARTED = true
         return
     elseif( key == IN_USE and ply.TETRISINV_PICKUP_STARTED ) then
